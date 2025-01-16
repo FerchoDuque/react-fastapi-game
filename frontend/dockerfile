@@ -1,0 +1,13 @@
+FROM node:18
+ 
+WORKDIR /frontend
+ 
+COPY package*.json ./
+ 
+RUN npm install && npm i web-vitals --save-dev
+
+COPY . .
+
+EXPOSE 3000
+ 
+CMD ["npm", "start"]

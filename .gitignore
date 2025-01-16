@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entornos virtuales
+env/
+venv/
+*.env
+
+# Configuración IDE
+.idea/
+.vscode/
+
+# Logs y datos temporales
+*.log
+*.sqlite3
+*.db
+
+# Configuración de Docker
+*.pid
+*.sock
+
+# Archivos de despliegue/localización
+instance/
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/build
+
+# Configuración IDE
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Configuración del sistema
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Variables de entorno
+.env
