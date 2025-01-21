@@ -1,15 +1,11 @@
 from jose import JWTError, jwt
-from datetime import datetime, timedelta  
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta   
 
 
 # Configuracion para JWT 
 SECRET_KEY = "H4nny4R35CU3{+!+}"
 ALGORITHM = "HR256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# Dependencias para token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 
 
 
 
@@ -25,7 +21,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 # Decodifica token
-def decode_token(token: str = Depends(oauth2_scheme)):
+def decode_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_email = payload.get("sub")

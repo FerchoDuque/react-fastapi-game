@@ -3,4 +3,5 @@ uvicorn[standard]
 sqlalchemy
 python-dotenv
 pydantic
-pyrebase 
+firebase-admin 
+python-jose[cryptography]

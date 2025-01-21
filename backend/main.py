@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from firebase_admin import auth, credentials, initialize_app
+from fastapi.security import OAuth2PasswordBearer
 
 from security import create_access_token, decode_token
 from models import UserLogin, Token
@@ -17,8 +18,11 @@ app.add_middleware(
 ) 
 
 # Inicializar firebase admin sdk
-cred = credentials.Certificate("D:/Proyectos/Games/keys/hannya-rescue-firebase-adminsdk-fbsvc-c39138a4bb.json")
+cred = credentials.Certificate("/backend/firebase-adminsdk.json")
 initialize_app(cred)
+
+# Define OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Datos simulados en memoria
 users = { "test@test.com": {"password": "1234", "highscore": 0} }
@@ -40,11 +44,11 @@ def login(user: UserLogin):
         raise HTTPException(status_code=401, detail="Credencials are not valid.")
 
 @app.get("/validate-user")
-def validate_user(token: str):
+def validate_user(token: str = Depends(oauth2_scheme)):
     try:
         result = decode_token(token)
         if result["status"] == "ok":
-            return{"status": "ok", "message": f"Welcome, {result["detail"]}"}
+            return{"status": "ok", "message": f"Welcome, {result['detail']}"}
         else:
             raise HTTPException(status_code=401, detail="Token is not valid")
     except Exception as e:

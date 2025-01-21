@@ -2,6 +2,15 @@ FROM python:3.10-slim
 
 WORKDIR /backend
 
+# Instalar herramientas de compilacion necesarias
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    libffi-dev \
+    libssl-dev \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
