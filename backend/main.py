@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from firebase_admin import auth, credentials, initialize_app
 
-from models import GameResult
+from security import create_access_token, decode_token
+from models import UserLogin, Token
 
 app = FastAPI()
 
@@ -14,6 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 ) 
 
+# Inicializar firebase admin sdk
+cred = credentials.Certificate("D:/Proyectos/Games/keys/hannya-rescue-firebase-adminsdk-fbsvc-c39138a4bb.json")
+initialize_app(cred)
+
 # Datos simulados en memoria
 users = { "test@test.com": {"password": "1234", "highscore": 0} }
 scores = []
@@ -21,14 +27,29 @@ scores = []
 
 @app.get("/")
 async def read_root():
-    return {"message": "Fast API corriendo!"}
+    return {"message": "Fast API is running!"}
 
 @app.post("/login")
-def login(email: str, password: str):
-    if email in users and users[email]["password"] == password:
-        return {"message": "Login successful", "email": email}
-    raise HTTPException(stattus_code=401, detail="Invalid credentials")
+def login(user: UserLogin):
+    try:
+        user_data = auth.get_user_by_email(user.email)
+        auth.verify_password(user.password, user.email)
+        access_token = create_access_token(data={"sub": user.email})
+        return {"access__token": access_token, "token_type": "bearer"}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Credencials are not valid.")
 
+@app.get("/validate-user")
+def validate_user(token: str):
+    try:
+        result = decode_token(token)
+        if result["status"] == "ok":
+            return{"status": "ok", "message": f"Welcome, {result["detail"]}"}
+        else:
+            raise HTTPException(status_code=401, detail="Token is not valid")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Token is not valid")  
+    
 @app.post("/score")
 def submit_score(email: str, score: int):
     if email in users:
