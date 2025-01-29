@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 
 function GameScreen() {
   const canvasRef = useRef(null);
+  const backgroundImageRef = useRef(null);
   const [jumping, setJumping] = useState(false);
   const [playerY, setPlayerY] = useState(200);
   const [obstacles, setObstacles] = useState([]);
@@ -12,6 +13,22 @@ function GameScreen() {
   const playerX = 50;
 
   useEffect(() => {
+    // 📌 Load background image
+    const backgroundImage = new Image();
+    backgroundImage.src = "/assets/lava-rock.png";
+
+    backgroundImage.onload = () => {
+      backgroundImageRef.current = backgroundImage;
+      console.log("Imagen de fondo cargada OK!");
+    };
+
+    backgroundImage.onerror = () => {
+      console.error("Error al cargar la imagen de fondo...");
+    };
+  });
+
+  // 🎮 Game configuration
+  useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
@@ -21,35 +38,33 @@ function GameScreen() {
     let animationFrameId;
     let backgroundX = 0;
 
-    // Load background image
-    const backgroundImage = new Image();
-    backgroundImage.src = "path/to/image.png"; // Cambia esto por la ruta correcta
-
     const update = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw the background in movement
-      context.drawImage(
-        backgroundImage,
-        backgroundX,
-        0,
-        canvas.width,
-        canvas.height
-      );
-      context.drawImage(
-        backgroundImage,
-        backgroundX + canvas.width,
-        0,
-        canvas.width,
-        canvas.height
-      );
-      backgroundX = (backgroundX - 2) % canvas.width; // Mueve el fondo
+      // 🔥 Draw the background in movement
+      if (backgroundImageRef.current) {
+        context.drawImage(
+          backgroundImageRef.current,
+          backgroundX,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        context.drawImage(
+          backgroundImageRef.current,
+          backgroundX + canvas.width,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        backgroundX = (backgroundX - 2) % canvas.width; // Mueve el fondo
+      }
 
-      // Draw the floor
+      // 🌱 Draw the floor
       context.fillStyle = "#228B22";
       context.fillRect(0, 350, canvas.width, 50);
 
-      // Character handling
+      // 🔺 Character handling
       if (jumping) {
         setPlayerY((prev) => Math.max(prev + jumpHeight, 0));
         setJumping(false);
@@ -57,11 +72,11 @@ function GameScreen() {
         setPlayerY((prev) => Math.min(prev + gravity, 300));
       }
 
-      // Draw the player
+      // 🔴 Draw the player
       context.fillStyle = "#FF0000";
       context.fillRect(playerX, playerY, 40, 40);
 
-      // Generate new obstacles
+      // 🚧 Generate new obstacles
       if (Math.random() < 0.01) {
         setObstacles((prev) => [
           ...prev,
@@ -69,7 +84,7 @@ function GameScreen() {
         ]);
       }
 
-      // Update and draw obstacles
+      // 🎯 Update and draw obstacles
       const updatedObstacles = obstacles.map((obs) => ({
         ...obs,
         x: obs.x - 5,
@@ -82,7 +97,7 @@ function GameScreen() {
         context.fillRect(obs.x, obs.y, obs.width, obs.height)
       );
 
-      // Verify collision
+      // 💥 Verify collision
       updatedObstacles.forEach((obs) => {
         if (
           playerX < obs.x + obs.width &&
@@ -94,7 +109,7 @@ function GameScreen() {
         }
       });
 
-      // If there is no collision, keep the animation
+      // ⏯ If there is no collision, keep the animation
       if (!gameOver) {
         animationFrameId = requestAnimationFrame(update);
       } else {
@@ -104,25 +119,31 @@ function GameScreen() {
       }
     };
 
-    animationFrameId = requestAnimationFrame(update);
+    // 👇 Play only if the backgroud is loadeds
+    if (backgroundImageRef.current) {
+      animationFrameId = requestAnimationFrame(update);
+    }
 
     // Clean Up
     return () => cancelAnimationFrame(animationFrameId);
-  }, [gameOver]); // Solo dependemos de gameOver
+  }, [gameOver, jumpHeight, jumping, obstacles, playerY]); // Solo dependemos de gameOver
 
-  const handleKeyDown = (e) => {
-    if (e.code === "Space" && playerY >= 300) {
-      // Permitir salto si el jugador está en el suelo
-      setJumping(true);
-    }
-  };
+  // 🚀 Handle the jump
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.code === "Space" && playerY >= 300) {
+        setJumping(true);
+      }
+    },
+    [playerY]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [handleKeyDown]);
 
   return (
     <div>

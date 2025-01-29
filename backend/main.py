@@ -18,7 +18,7 @@ app.add_middleware(
 ) 
 
 # Inicializar firebase admin sdk
-cred = credentials.Certificate("/backend/firebase-adminsdk.json")
+cred = credentials.Certificate("/backend/keys/hannya-rescue-firebase-adminsdk.json")
 initialize_app(cred)
 
 # Define OAuth2 scheme

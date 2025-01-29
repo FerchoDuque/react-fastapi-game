@@ -7,7 +7,6 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/backend
-      - /D/Proyectos/Games/keys/hannya-rescue-firebase-adminsdk-fbsvc-c39138a4bb.json:/backend/firebase-adminsdk.json
     environment:
       - FLASK_ENV=development
 
